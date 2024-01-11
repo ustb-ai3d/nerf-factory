@@ -53,7 +53,7 @@ class LitDataNeuroFluid(LitData):
             white_bkgd=white_bkgd,
         )
 
-        super(LitDataBlender, self).__init__(datadir)
+        super(LitDataNeuroFluid, self).__init__(datadir)
         self.white_bkgd = white_bkgd
 
 @gin.configurable(denylist=["datadir", "scene_name"])

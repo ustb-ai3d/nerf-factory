@@ -58,17 +58,21 @@ def load_neurofluid_data(
     splits = ["train", "val", "test"]
     metas = {}
 
+    file_order = []
     for s in splits:
         for folder in os.listdir(basedir):
             if folder[:4] != 'view':
                 continue
             sub_dir = os.path.join(basedir, folder)
+            if len(file_order) < 5:
+                file_order.append(folder)
 
             with open(os.path.join(sub_dir, "transforms_{}.json".format(s)), "r") as fp:
-                if folder[5] == '1':
-                    metas[s] = json.load(fp)
-                else:
+                if s in metas.keys():
                     metas[s]["frames"].extend(json.load(fp)["frames"])
+                else:
+                    metas[s] = json.load(fp)
+
 
     for s in splits:
         meta = metas[s]
@@ -82,15 +86,22 @@ def load_neurofluid_data(
         elif s == "test":
             skip = test_skip
 
-        for frame in meta["frames"][::skip]:
-            fname = os.path.join(basedir, frame["file_path"] + ".png")
-            imgs.append(imageio.imread(fname))
-            poses.append(np.array(frame["transform_matrix"]))
+        i = 0
+        for folder in file_order:
+            sub_dir = os.path.join(basedir, folder)
+            view_datanum = 100
+            start = i * view_datanum
+            end = (i + 1) * view_datanum
+            for frame in meta["frames"][start:end:skip]:
+                fname = os.path.join(sub_dir, frame["file_path"] + ".png")
+                imgs.append(imageio.imread(fname))
+                poses.append(np.array(frame["transform_matrix"]))
+            i += 1
         imgs = (np.array(imgs) / 255.0).astype(np.float32)  # keep all 4 channels (RGBA)
         poses = np.array(poses).astype(np.float32)
-        counts.append(counts[-1] + imgs.shape[0])
         images.append(imgs)
         extrinsics.append(poses)
+        counts.append(counts[-1] + imgs.shape[0])
 
     i_split = [np.arange(counts[i], counts[i + 1]) for i in range(3)]
 
