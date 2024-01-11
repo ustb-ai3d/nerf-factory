@@ -15,6 +15,7 @@ from src.data.litdata import (
     LitDataRefNeRFReal,
     LitDataShinyBlender,
     LitDataTnT,
+    LitDataNeuroFluid,
 )
 from src.model.dvgo.model import LitDVGO
 from src.model.mipnerf360.model import LitMipNeRF360
@@ -69,6 +70,8 @@ def select_dataset(
         data_fun = LitDataShinyBlender
     elif dataset_name == "refnerf_real":
         data_fun = LitDataRefNeRFReal
+    elif dataset_name == "neurofluid":
+        data_fun = LitDataNeuroFluid
 
     return data_fun(
         datadir=datadir,

@@ -17,7 +17,44 @@ from src.data.data_util.refnerf_real import load_refnerf_real_data
 from src.data.data_util.shiny_blender import load_shiny_blender_data
 from src.data.data_util.tnt import load_tnt_data
 from src.data.interface import LitData
+from src.data.data_util.neurofluid import load_neurofluid_data
 
+@gin.configurable(denylist=["datadir", "scene_name"])
+class LitDataNeuroFluid(LitData):
+    def __init__(
+        self,
+        datadir: str,
+        scene_name: str,
+        # Blender specific
+        train_skip: int = 1,
+        val_skip: int = 1,
+        test_skip: int = 1,
+        cam_scale_factor: float = 1.0,
+        white_bkgd: bool = True,
+    ):
+
+        (
+            self.images,
+            self.intrinsics,
+            self.extrinsics,
+            self.image_sizes,
+            self.near,
+            self.far,
+            self.ndc_coeffs,
+            (self.i_train, self.i_val, self.i_test, self.i_all),
+            self.render_poses,
+        ) = load_neurofluid_data(
+            datadir=datadir,
+            scene_name=scene_name,
+            train_skip=train_skip,
+            val_skip=val_skip,
+            test_skip=test_skip,
+            cam_scale_factor=cam_scale_factor,
+            white_bkgd=white_bkgd,
+        )
+
+        super(LitDataBlender, self).__init__(datadir)
+        self.white_bkgd = white_bkgd
 
 @gin.configurable(denylist=["datadir", "scene_name"])
 class LitDataLLFF(LitData):
