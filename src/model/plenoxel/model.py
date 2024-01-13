@@ -472,13 +472,13 @@ class LitPlenoxel(LitModel):
         targets = self.alter_gather_cat(outputs, "target", all_image_sizes)
         psnr = self.psnr(rgbs, targets, dmodule.i_train, dmodule.i_val, dmodule.i_test)
         ssim = self.ssim(rgbs, targets, dmodule.i_train, dmodule.i_val, dmodule.i_test)
-        lpips = self.lpips(
-            rgbs, targets, dmodule.i_train, dmodule.i_val, dmodule.i_test
-        )
+        # lpips = self.lpips(
+        #     rgbs, targets, dmodule.i_train, dmodule.i_val, dmodule.i_test
+        # )
 
         self.log("test/psnr", psnr["test"], on_epoch=True)
         self.log("test/ssim", ssim["test"], on_epoch=True)
-        self.log("test/lpips", lpips["test"], on_epoch=True)
+        # self.log("test/lpips", lpips["test"], on_epoch=True)
 
         if self.trainer.is_global_zero:
             image_dir = os.path.join(self.logdir, "render_model")
@@ -486,7 +486,7 @@ class LitPlenoxel(LitModel):
             store_image.store_image(image_dir, rgbs)
 
             self.write_stats(
-                os.path.join(self.logdir, "results.json"), psnr, ssim, lpips
+                os.path.join(self.logdir, "results.json"), psnr, ssim, # lpips
             )
 
     def validation_epoch_end(self, outputs):
@@ -495,10 +495,10 @@ class LitPlenoxel(LitModel):
         targets = self.alter_gather_cat(outputs, "target", val_image_sizes)
         psnr_mean = self.psnr_each(rgbs, targets).mean()
         ssim_mean = self.ssim_each(rgbs, targets).mean()
-        lpips_mean = self.lpips_each(rgbs, targets).mean()
+        # lpips_mean = self.lpips_each(rgbs, targets).mean()
         self.log("val/psnr", psnr_mean.item(), on_epoch=True)
         self.log("val/ssim", ssim_mean.item(), on_epoch=True)
-        self.log("val/lpips", lpips_mean.item(), on_epoch=True)
+        # self.log("val/lpips", lpips_mean.item(), on_epoch=True)
         return super().validation_epoch_end(outputs)
 
     def on_save_checkpoint(self, checkpoint) -> None:

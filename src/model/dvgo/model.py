@@ -536,10 +536,10 @@ class LitDVGO(LitModel):
         targets = self.alter_gather_cat(outputs, "target", val_image_sizes)
         psnr_mean = self.psnr_each(rgbs, targets).mean()
         ssim_mean = self.ssim_each(rgbs, targets).mean()
-        lpips_mean = self.lpips_each(rgbs, targets).mean()
+        # lpips_mean = self.lpips_each(rgbs, targets).mean()
         self.log("val/psnr", psnr_mean.item(), on_epoch=True, sync_dist=True)
         self.log("val/ssim", ssim_mean.item(), on_epoch=True, sync_dist=True)
-        self.log("val/lpips", lpips_mean.item(), on_epoch=True, sync_dist=True)
+        # self.log("val/lpips", lpips_mean.item(), on_epoch=True, sync_dist=True)
 
     def test_epoch_end(self, outputs):
         dmodule = self.trainer.datamodule
@@ -552,13 +552,13 @@ class LitDVGO(LitModel):
         targets = self.alter_gather_cat(outputs, "target", all_image_sizes)
         psnr = self.psnr(rgbs, targets, dmodule.i_train, dmodule.i_val, dmodule.i_test)
         ssim = self.ssim(rgbs, targets, dmodule.i_train, dmodule.i_val, dmodule.i_test)
-        lpips = self.lpips(
-            rgbs, targets, dmodule.i_train, dmodule.i_val, dmodule.i_test
-        )
+        # lpips = self.lpips(
+        #     rgbs, targets, dmodule.i_train, dmodule.i_val, dmodule.i_test
+        # )
 
         self.log("test/psnr", psnr["test"], on_epoch=True)
         self.log("test/ssim", ssim["test"], on_epoch=True)
-        self.log("test/lpips", lpips["test"], on_epoch=True)
+        # self.log("test/lpips", lpips["test"], on_epoch=True)
 
         if self.trainer.is_global_zero:
             image_dir = os.path.join(self.logdir, "render_model")
@@ -566,9 +566,9 @@ class LitDVGO(LitModel):
             store_image.store_image(image_dir, rgbs)
 
             result_path = os.path.join(self.logdir, "results.json")
-            self.write_stats(result_path, psnr, ssim, lpips)
+            # self.write_stats(result_path, psnr, ssim, lpips)
 
-        return psnr, ssim, lpips
+        return psnr, ssim, # lpips
 
     @torch.no_grad()
     def compute_bbox_by_coarse_geo(self, model_class, model_path, thres):

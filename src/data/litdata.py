@@ -19,6 +19,9 @@ from src.data.data_util.tnt import load_tnt_data
 from src.data.interface import LitData
 from src.data.data_util.neurofluid import load_neurofluid_data
 
+import numpy as np
+import torch
+
 @gin.configurable(denylist=["datadir", "scene_name"])
 class LitDataNeuroFluid(LitData):
     def __init__(
@@ -43,6 +46,7 @@ class LitDataNeuroFluid(LitData):
             self.ndc_coeffs,
             (self.i_train, self.i_val, self.i_test, self.i_all),
             self.render_poses,
+            self.frame_num,
         ) = load_neurofluid_data(
             datadir=datadir,
             scene_name=scene_name,
@@ -54,6 +58,54 @@ class LitDataNeuroFluid(LitData):
         )
 
         super(LitDataNeuroFluid, self).__init__(datadir)
+        self.white_bkgd = white_bkgd
+
+    def get_data_1_frame(self, frame_i=0):
+        images1frame = self.images[frame_i::self.frame_num, ...]
+        intrinsics1frame = self.intrinsics[frame_i::self.frame_num, ...]
+        extrinsics1frame = self.extrinsics[frame_i::self.frame_num, ...]
+        i_split1frame = []
+        i_split1frame.append(self.i_train[:len(self.i_train)//self.frame_num])
+        i_split1frame.append(np.arange(i_split1frame[0][-1]+1, i_split1frame[0][-1]+1+len(self.i_val)//self.frame_num))
+        i_split1frame.append(np.arange(i_split1frame[1][-1]+1, i_split1frame[1][-1]+1+len(self.i_test)//self.frame_num))
+        i_split1frame.append(self.i_all[:len(self.i_all) // self.frame_num])
+
+        return (
+            images1frame,
+            intrinsics1frame,
+            extrinsics1frame,
+            self.image_sizes,
+            self.near,
+            self.far,
+            (-1, -1),
+            i_split1frame,
+            self.render_poses,
+            self.frame_num,
+        )
+
+class LitDataNeuroFluid1Frame(LitData):
+    def __init__(
+        self,
+        datadir: str,
+        frame_i: int,
+        data_module_all: LitDataNeuroFluid,
+        white_bkgd: bool = True,
+    ):
+
+        (
+            self.images,
+            self.intrinsics,
+            self.extrinsics,
+            self.image_sizes,
+            self.near,
+            self.far,
+            self.ndc_coeffs,
+            (self.i_train, self.i_val, self.i_test, self.i_all),
+            self.render_poses,
+            self.frame_num,
+        ) = data_module_all.get_data_1_frame(frame_i)
+
+        super(LitDataNeuroFluid1Frame, self).__init__(datadir)
         self.white_bkgd = white_bkgd
 
 @gin.configurable(denylist=["datadir", "scene_name"])

@@ -72,7 +72,7 @@ def load_neurofluid_data(
                     metas[s]["frames"].extend(json.load(fp)["frames"])
                 else:
                     metas[s] = json.load(fp)
-
+                    view_datanum = len(metas[s]["frames"])
 
     for s in splits:
         meta = metas[s]
@@ -89,7 +89,6 @@ def load_neurofluid_data(
         i = 0
         for folder in file_order:
             sub_dir = os.path.join(basedir, folder)
-            view_datanum = 100
             start = i * view_datanum
             end = (i + 1) * view_datanum
             for frame in meta["frames"][start:end:skip]:
@@ -152,4 +151,5 @@ def load_neurofluid_data(
         (-1, -1),
         i_split,
         render_poses,
+        view_datanum,
     )
